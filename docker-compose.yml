@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.4
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build: ./frontend
+    labels:
+      - "traefik.http.routers.frontend.rule=Host(`yourdomain.com`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+
+  backend:
+    build: ./backend
+    labels:
+      - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.middlewares=strip-prefix"
+      - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    labels:
+      - "traefik.http.routers.adminer.rule=Host(`db.yourdomain.com`)"
+      - "traefik.http.routers.adminer.entrypoints=web"
+
+  proxy-manager:
+    image: jc21/nginx-proxy-manager
+    ports:
+      - "8090:81"
+    labels:
+      - "traefik.http.routers.proxy-manager.rule=Host(`proxy.yourdomain.com`)"
+      - "traefik.http.routers.proxy-manager.entrypoints=web"
