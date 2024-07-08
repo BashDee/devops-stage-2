@@ -11,7 +11,9 @@ services:
       - "traefik.http.routers.frontend-secure.tls.certresolver=myresolver"
 
   backend:
-    build: ./backend/.env
+    build: ./backend
+    env_file:
+      - ./backend/.env
     labels:
       - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
