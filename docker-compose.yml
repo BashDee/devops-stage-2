@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   frontend:
     build: ./frontend
@@ -14,7 +16,6 @@ services:
     build: ./backend
     env_file:
       - ./backend/.env
-    
     labels:
       - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
@@ -48,35 +49,29 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
-db:
+
+  db:
     image: postgres
     restart: always
-    # set shared memory limit when using docker-compose
     shm_size: 128mb
-    # or set shared memory limit when deploy via swarm stack
-    #volumes:
-    #  - type: tmpfs
-    #    target: /dev/shm
-    #    tmpfs:
-    #      size: 134217728 # 128*2^20 bytes = 128Mb
     environment:
       POSTGRES_USER: app
-      POSTGRESS_DB: app
+      POSTGRES_DB: app
       POSTGRES_PASSWORD: postgresql
-adminer:
+
+  adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
     labels:
-    - "traefik.http.routers.adminer.rule=Host(`db.chacehng.mooo.com`)"
-    - "traefik.http.routers.adminer.entrypoints=web"
+      - "traefik.http.routers.adminer.rule=Host(`db.chacehng.mooo.com`)"
+      - "traefik.http.routers.adminer.entrypoints=web"
 
-proxy-manager:
-  image: jc21/nginx-proxy-manager
-  ports:
-    - "8090:81"
-  labels:
-    - "traefik.http.routers.proxy-manager.rule=Host(`proxy.chacehng.mooo.com`)"
-    - "traefik.http.routers.proxy-manager.entrypoints=web"
-                                                                    
+  proxy-manager:
+    image: jc21/nginx-proxy-manager
+    ports:
+      - "8090:81"
+    labels:
+      - "traefik.http.routers.proxy-manager.rule=Host(`proxy.chacehng.mooo.com`)"
+      - "traefik.http.routers.proxy-manager.entrypoints=web"
