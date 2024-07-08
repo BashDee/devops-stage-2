@@ -1,7 +1,6 @@
 services:
   frontend:
     build: ./frontend
-    dockerfile: Dockerfile 
     labels:
       - "traefik.http.routers.frontend.rule=Host(`chacehng.mooo.com`)"
       - "traefik.http.routers.frontend.entrypoints=web"
@@ -15,7 +14,7 @@ services:
     build: ./backend
     env_file:
       - ./backend/.env
-    dockerfile: Dockerfile
+    
     labels:
       - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
