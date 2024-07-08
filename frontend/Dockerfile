@@ -1,12 +1,12 @@
 # Stage 1: Build the React app
-FROM node:14-alpine as build
+FROM node:14 as build
 WORKDIR /app
-COPY package.json yarn.lock ./
+COPY package.json package-lock.json ./
 RUN npm install
 # RUN yarn install
 COPY . .
 RUN npm run build
-RUN npm run dev
+# RUN npm run dev
 # RUN yarn build
 
 RUN npm install -g serve
