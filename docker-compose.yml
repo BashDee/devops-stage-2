@@ -1,51 +1,79 @@
-version: '2.28'
-
 services:
+  frontend:
+    build: ./frontend
+    labels:
+      - "traefik.http.routers.frontend.rule=Host(`chacehng.mooo.com`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.frontend-secure.rule=Host(`chacehng.mooo.com`)"
+      - "traefik.http.routers.frontend-secure.entrypoints=websecure"
+      - "traefik.http.routers.frontend-secure.tls.certresolver=myresolver"
+
+  backend:
+    build: ./backend/.env
+    labels:
+      - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.backend-secure.rule=Host(`chacehng.mooo.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-secure.entrypoints=websecure"
+      - "traefik.http.routers.backend-secure.tls.certresolver=myresolver"
+
   traefik:
-    image: traefik:v2.4
+    image: "traefik:v3.0"
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=your-email@domain.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    labels:
+      - "traefik.http.routers.www-redirect.rule=Host(`chacehng.mooo.com`)"
+      - "traefik.http.routers.www-redirect.entrypoints=web"
+      - "traefik.http.routers.www-redirect.middlewares=www-redirect"
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^http://www.(.*)"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=http://$1"
+      - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
-  frontend:
-    build: ./frontend
-    labels:
-      - "traefik.http.routers.frontend.rule=Host(`yourdomain.com`)"
-      - "traefik.http.routers.frontend.entrypoints=web"
-
-  backend:
-    build: ./backend
-    labels:
-      - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=web"
-      - "traefik.http.routers.backend.middlewares=strip-prefix"
-      - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
-
-  db:
-    image: postgres:13
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+db:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: dbname
-
-  adminer:
+      POSTGRES_USER: app
+      POSTGRESS_DB: app
+      POSTGRES_PASSWORD: postgresql
+adminer:
     image: adminer
+    restart: always
     ports:
-      - "8080:8080"
+      - 8080:8080
     labels:
-      - "traefik.http.routers.adminer.rule=Host(`db.yourdomain.com`)"
-      - "traefik.http.routers.adminer.entrypoints=web"
+    - "traefik.http.routers.adminer.rule=Host(`db.chacehng.mooo.com`)"
+    - "traefik.http.routers.adminer.entrypoints=web"
 
-  proxy-manager:
-    image: jc21/nginx-proxy-manager
-    ports:
-      - "8090:81"
-    labels:
-      - "traefik.http.routers.proxy-manager.rule=Host(`proxy.yourdomain.com`)"
-      - "traefik.http.routers.proxy-manager.entrypoints=web"
+proxy-manager:
+  image: jc21/nginx-proxy-manager
+  ports:
+    - "8090:81"
+  labels:
+    - "traefik.http.routers.proxy-manager.rule=Host(`proxy.chacehng.mooo.com`)"
+    - "traefik.http.routers.proxy-manager.entrypoints=web"
+                                                                    
