@@ -1,6 +1,5 @@
-
 # Use an official Python runtime as a parent image
-FROM python:3.9
+FROM python:3.10
 
 # Set the working directory to /app
 WORKDIR /app
@@ -22,4 +21,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the command to start the FastAPI server
-CMD ["poetry", "run", "bash", "./prestart.sh", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
