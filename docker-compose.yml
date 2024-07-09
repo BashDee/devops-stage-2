@@ -3,6 +3,8 @@ version: '3.8'
 services:
   frontend:
     build: ./frontend
+    env_file:
+      - ./frontend/.env
     labels:
       - "traefik.http.routers.frontend.rule=Host(`chacehng.mooo.com`)"
       - "traefik.http.routers.frontend.entrypoints=web"
@@ -11,19 +13,20 @@ services:
       - "traefik.http.routers.frontend-secure.rule=Host(`chacehng.mooo.com`)"
       - "traefik.http.routers.frontend-secure.entrypoints=websecure"
       - "traefik.http.routers.frontend-secure.tls.certresolver=myresolver"
-
+      - "traefik. http.services.frontend.loadbalancer.server.port=80"
   backend:
     build: ./backend
     env_file:
       - ./backend/.env
     labels:
-      - "traefik.http.routers.backend.rule=Host(`yourdomain.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.rule=Host(`chacehng.mooo.com`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.routers.backend.middlewares=https-redirect"
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.backend-secure.rule=Host(`chacehng.mooo.com`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend-secure.entrypoints=websecure"
       - "traefik.http.routers.backend-secure.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"  # Add this line to specify the backend service port
 
   traefik:
     image: "traefik:v3.0"
