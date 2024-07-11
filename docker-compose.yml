@@ -27,7 +27,7 @@ services:
       - POSTGRES_DB=app
       - POSTGRES_USER=app
       - POSTGRES_PASSWORD=changethis123
-      - BACKEND_CORS_ORIGINS=https://stagetwodevops.chickenkiller.com,http://localhost,http://localhost:5173,https://localhost,https://localhost:5173
+      - BACKEND_CORS_ORIGINS=https://chacehng.mooo.com,http://localhost,http://localhost:5173,https://localhost,https://localhost:5173
       - SECRET_KEY=changethis123
       - FIRST_SUPERUSER=devops@hng.tech
       - FIRST_SUPERUSER_PASSWORD=devops#HNG11
