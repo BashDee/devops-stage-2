@@ -1,22 +1,29 @@
-# Stage 1: Build the React app
-FROM node:14 as build
+# Use a specific Node.js version for better consistency
+FROM node:20
+
+# Set working directory
 WORKDIR /app
-COPY package.json ./
+
+# Copy package.json and package-lock.json (if you have it)
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
-# RUN yarn install
+
+# Install Vite globally (optional, depending on your setup)
+RUN npm install -g vite@^5.0.13
+
+# Copy the rest of the application
 COPY . .
+
+# Build the Next.js app for production
 RUN npm run build
-# RUN npm run dev
-# RUN yarn build
 
-RUN npm install -g serve
+# Expose the port Next.js is expected to run on (usually 3000)
+EXPOSE 5173
 
+# Set the working directory to the 'dist' folder
+WORKDIR /app/dist
 
-# Set the environment variables (ensure .env is correctly set)
-COPY .env .env
-
-# Run the command to serve the application
-CMD ["serve", "-s", "build"]
-
-# Expose the port the app runs on
-EXPOSE 80
+# Start the Next.js server
+CMD ["npx", "serve", "-s", "-l", "5173", "-H", "0.0.0.0"]

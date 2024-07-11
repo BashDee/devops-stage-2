@@ -1,24 +1,38 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10
+# Use the official Python image with the desired version
+FROM python:3.11-slim
 
-# Set the working directory to /app
-WORKDIR /app
+# Install system dependencies and build tools
+RUN apt-get update && \
+    apt-get install -y curl build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN pip install poetry
+
+# Add Poetry to PATH
 ENV PATH="/root/.local/bin:$PATH"
 
-# Copy the pyproject.toml and poetry.lock files to the working directory
-COPY pyproject.toml poetry.lock ./
+# Set the working directory in the container
+WORKDIR /app
 
-# Install the dependencies
-RUN poetry install --no-root
+# Copy pyproject.toml and poetry.lock to the working directory
+COPY pyproject.toml poetry.lock* /app/
 
-# Copy the rest of the application code to the working directory
-COPY . .
+# Install dependencies using Poetry
+RUN poetry install --no-root --no-interaction --no-ansi
 
-# Expose the port the app runs on
+# Copy the rest of the application code to the container
+COPY . /app
+
+# Ensure the application directory is in the Python path
+ENV PYTHONPATH=/app
+
+# Ensure the prestart.sh script is executable
+RUN chmod +x ./prestart.sh
+
+# Expose the application port
 EXPOSE 8000
 
-# Run the command to start the FastAPI server
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the backend server
+CMD poetry run bash ./prestart.sh;poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
+
