@@ -60,16 +60,6 @@ Here’s an overview of the Docker Compose file and the rationale behind the con
 
 ## The Decision to Use NGINX and NGINX Proxy Manager
 
-### NGINX
-- **Reverse Proxy**: NGINX routes requests to the appropriate service (frontend, backend) based on URL patterns, improving security and load balancing.
-- **Static File Serving**: NGINX efficiently serves static files, reducing the load on the backend and improving response times.
-- **SSL Termination**: NGINX manages HTTPS requests and forwards them as HTTP to the backend services.
-
-### NGINX Proxy Manager
-- **User-Friendly Interface**: NGINX Proxy Manager offers a web-based interface for configuring proxy settings, managing domains, and obtaining SSL certificates with Let's Encrypt, simplifying complex configurations.
-- **SSL Management**: The Proxy Manager streamlines obtaining and renewing SSL certificates, ensuring secure connections for the web application.
-- **Access Control**: Allows easy setup of access controls and redirections, adding a layer of security and flexibility to the application.
-
 ## How to Run the Project
 
 1. **Clone the Repository:**
